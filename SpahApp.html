@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpahApp</title>
+</head>
+<body>
+
+
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpahApp</title>
+</head>
+<body>
+    
+    <!-- SpahApp code ---------------------------------------------------------------------- -->
+
+    <script>
+        let storedSettings;
+        const DEFAULT_PASSWORD = 'admin';
+
+        
+        try{
+
+            storedSettings = JSON.parse(localStorage.getItem('spInlineEditorContent')) || {};
+            // console.log("storedSettings:", storedSettings)
+
+        } catch {
+
+            // storedSettings = {};
+            // console.log("storedSettings:", storedSettings)
+
+            // function isObjectEmpty(obj) { return Object.keys(obj).length === 0; }
+
+        }
+        // const storedSettings = JSON.parse(localStorage.getItem('spInlineEditorContent')) || {};
+        // console.log("storedSettings:", storedSettings)
+
+        function isObjectEmpty(obj) { return Object.keys(obj).length === 0; }
+
+        if (isObjectEmpty(storedSettings)) {
+            storedSettingKeys = {HTML_CSS: '', JS: '', About: '', Contact: ''};
+            localStorage.setItem('spInlineEditorContent', JSON.stringify(storedSettingKeys));
+        }
+        
+        let spHomeContent = storedSettings.HTML_CSS
+        // console.log(spHomeContent)
+        let spReadmeContent = storedSettings.ReadMe;
+
+        document.body.style.margin = '0';
+
+        // Create the main spGridContainer
+        const spGridContainer = document.createElement('div');
+        spGridContainer.style.display = 'grid';
+        spGridContainer.style.gridTemplateColumns = '40px repeat(10, 1fr) 40px';
+        spGridContainer.style.gridTemplateRows = '40px 40px repeat(9, 1fr) 40px';
+        spGridContainer.style.height = '100vh';
+
+        // Create the title
+        const spTitle = document.createElement('div');
+        spTitle.style.gridColumn = '1 / -1';
+        spTitle.style.gridRow = '1';
+        spTitle.style.backgroundColor = '#f4f4f4';
+        spTitle.style.display = 'flex';
+        spTitle.style.flexDirection = 'row';
+        spTitle.style.justifyContent = 'center';
+        spTitle.style.alignItems = 'center';
+        spTitle.style.fontSize = '1.5em';
+        spTitle.style.position = 'sticky';
+        spTitle.style.top = '0';
+        spTitle.style.padding = '10px';
+        spTitle.textContent = storedSettings.title || 'SpahApp';
+
+        spGridContainer.appendChild(spTitle);
+
+        // Create the left navigation
+        const spLeftNav = document.createElement('nav');
+        spLeftNav.className = 'spLeftNav';
+
+        // Create navigation spRightNavLinks
+        const leftNavlinks = [
+            { id: 'spApp', text: '🪄', section: 'spApp' },
+            { id: 'spReadme', text: '📄', section: 'spReadme' },
+            { id: 'spDownloadApp', text: '⬇️', section: 'spDownloadApp' },
+            { id: 'spDownloadAppData', text: '📊', section: 'spDownloadAppData' },
+            { id: 'spHelp', text: '❓', section: 'spHelp' },
+            { id: 'spSettings', text: '⚙️', section: 'sp-loginForm' }
+        ];
+
+        leftNavlinks.forEach(linkInfo => {
+            const leftNavlink = document.createElement('div');
+            // leftNavlink.href = `#${linkInfo.section}`;
+            leftNavlink.id = linkInfo.id;
+            leftNavlink.className = linkInfo.id;
+            leftNavlink.textContent = linkInfo.text;
+            leftNavlink.style.padding = '10px';
+            leftNavlink.style.textDecoration = 'none';
+            leftNavlink.onclick = () => showSection(linkInfo.section);
+            spLeftNav.appendChild(leftNavlink);
+        });
+
+        // Apply additional styles
+        spLeftNav.style.gridColumn = '1 / 2';
+        spLeftNav.style.gridRow = '2 / -1';
+        spLeftNav.style.border = '1px solid #ddd';
+        spLeftNav.style.backgroundColor = '#f4f4f4';
+        spLeftNav.style.display = 'grid';
+        spLeftNav.style.alignContent = 'center';
+
+        spGridContainer.appendChild(spLeftNav);
+
+
+        const spRightNav = document.createElement('nav');
+        spRightNav.className = 'spRightNav';
+
+        // Create navigation spRightNavLinks
+        const spRightNavLinks = [
+            { id: 'appTitle', text: '📱', section: 'appTitle' },
+            { id: 'appPassword', text: '🔑', section: 'appPassword' },
+            { id: 'appEditor', text: '🖋️', section: 'appHTML' }
+        ];
+
+        spRightNavLinks.forEach(linkInfo => {
+            const spRightNavLink = document.createElement('a');
+            // spRightNavLink.href = `#${linkInfo.section}`;
+            spRightNavLink.id = linkInfo.id;
+            spRightNavLink.className = linkInfo.id;
+            spRightNavLink.textContent = linkInfo.text;
+            spRightNavLink.style.padding = '10px';
+            spRightNavLink.style.textDecoration = 'none';
+            spRightNavLink.onclick = () => showRightSection(linkInfo.section);
+            spRightNav.appendChild(spRightNavLink);
+        });
+
+        spRightNav.style.gridColumn = '12 / 13';
+        spRightNav.style.gridRow = '3 / -1';
+        spRightNav.style.border = '1px solid #ddd';
+        spRightNav.style.backgroundColor = '#f4f4f4';
+        spRightNav.style.display = 'none';
+        spRightNav.style.flexDirection = 'column';
+        spRightNav.style.justifyContent = 'center';
+        spRightNav.style.alignItems = 'center';
+        spRightNav.style.fontSize = '1em';
+        spRightNav.style.padding = '20px';
+
+        spGridContainer.appendChild(spRightNav);
+
+        // Create the sp-main-spGridContainer (merging all rows from the 2nd row in the 2nd column to the 11th column)
+        const spMainContainer = document.createElement('div');
+        spMainContainer.style.gridColumn = '2 / 12';
+        spMainContainer.style.gridRow = '3 / -1';
+        spMainContainer.style.border = '1px solid #ddd';
+        // spMainContainer.style.backgroundColor = '#e4e4e4';
+        spMainContainer.style.display = 'block';
+        spMainContainer.style.fontSize = '1em';
+        spMainContainer.style.padding = '20px';
+        spMainContainer.innerHTML = spHomeContent;
+        spGridContainer.appendChild(spMainContainer);
+
+    
+        const spHomeContainerNav = document.createElement('nav'); 
+        spHomeContainerNav.className = 'spHomeContainerNav';
+
+        const spHomeContainerNavLinks = [
+            { id: 'appHome', text: 'Home', section: 'appHome' },
+            { id: 'appAbout', text: 'About', section: 'appAbout' },
+            { id: 'appContact', text: 'Contact', section: 'appContact' }
+        ];
+
+        spHomeContainerNavLinks.forEach(linkInfo => {
+            const spHomeContainerNavLink = document.createElement('a');
+            // spHomeContainerNavLink.href = `#${linkInfo.section}`;
+            spHomeContainerNavLink.id = linkInfo.id;
+            spHomeContainerNavLink.className = linkInfo.id;
+            spHomeContainerNavLink.textContent = linkInfo.text;
+            spHomeContainerNavLink.style.padding = '10px';
+            spHomeContainerNavLink.style.textDecoration = 'none';
+            spHomeContainerNavLink.onclick = () => spHomeContainerNavSection(linkInfo.section);
+
+            spHomeContainerNav.appendChild(spHomeContainerNavLink);
+
+
+        });
+
+        spHomeContainerNav.style.gridColumn = '2 / -2';
+        spHomeContainerNav.style.gridRow = '2';
+        spHomeContainerNav.style.border = '1px solid #ddd';
+        spHomeContainerNav.style.backgroundColor = '#f4f4f4';
+        spHomeContainerNav.style.display = 'none';
+        spHomeContainerNav.style.flexDirection = 'row';
+        spHomeContainerNav.style.justifyContent = 'center';
+        spHomeContainerNav.style.alignItems = 'center';
+        spHomeContainerNav.style.fontSize = '1em';
+        spHomeContainerNav.style.padding = '20px';
+
+        spGridContainer.appendChild(spHomeContainerNav);
+        document.body.appendChild(spGridContainer);
+
+        // <!-- SpahApp InLine Editor code ---------------------------------------------------------------- -->
+
+        function spInlineEditor() {
+
+            spMainContainer.innerHTML = '';
+
+            let inlineStoredSettings = JSON.parse(localStorage.getItem('spInlineEditorContent')) || {};
+            let spInlineEditorContent = JSON.parse(localStorage.getItem('spInlineEditorContent')) || {};
+
+            const spInlineEditorContainer = document.createElement('div');
+            spInlineEditorContainer.id = 'spInlineEditorContainer';
+            document.body.appendChild(spInlineEditorContainer);
+
+            spInlineEditorContainer.style.border = "1px solid #ccc";
+            spInlineEditorContainer.style.padding = "10px";
+            spInlineEditorContainer.style.width = "100%";
+            spInlineEditorContainer.style.margin = "10px auto";
+            spInlineEditorContainer.style.boxSizing = "border-box";
+
+            // const spInlineEditorTitle = document.createElement('h3');
+            // spInlineEditorTitle.textContent = tabId[0];
+
+            const spInlineEditorEditor = document.createElement('div');
+            spInlineEditorEditor.id = 'spInlineEditorEditor';
+            spInlineEditorEditor.contentEditable = true;
+            // spInlineEditorEditor.innerHTML = '';
+            spInlineEditorEditor.style.minHeight = "200px";
+            spInlineEditorEditor.style.padding = "8px";
+            spInlineEditorEditor.style.border = "1px solid #ccc";
+            spInlineEditorEditor.style.borderRadius = "4px";
+            spInlineEditorEditor.style.marginTop = "10px";
+            spInlineEditorEditor.style.width = "100%";
+            spInlineEditorEditor.style.wordWrap = 'break-word';
+            spInlineEditorEditor.style.boxSizing = "border-box";
+            spInlineEditorEditor.style.whiteSpace = "normal";
+
+            const tabs = ['HTML_CSS','JS', 'About', 'Contact'];
+            let activeTab = 'HTML_CSS';
+            try {
+                spInlineEditorEditor.innerHTML = spInlineEditorContent.HTML_CSS || "Please upload HTML content!"
+            } catch { "Catch HTML Error "}
+            
+
+            const tabsContainer = document.createElement('div');
+            // tabsContainer.textContent = activeTab;
+            tabsContainer.style.display = 'grid';
+            tabsContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            tabsContainer.style.gap = '10px';
+            tabsContainer.style.marginBottom = '10px';
+
+            tabs.forEach(tab => {
+                const button = document.createElement('button');
+                button.textContent = tab;
+                button.style.padding = '10px';
+                button.style.backgroundColor = tab === activeTab ? '#007BFF' : '#ddd';
+                button.style.color = tab === activeTab ? 'white' : 'black';
+                button.style.border = 'none';
+                button.style.cursor = 'pointer';
+                button.style.borderRadius = '4px 4px 0 0';
+                button.style.textAlign = 'center';
+
+                button.addEventListener('click', () => {
+
+                    activeTab = tab;
+                    updateTabStyles();
+                    // console.log(activeTab)
+                });
+
+                if (button) {
+                button.addEventListener('click', () => {
+
+                    let value = spInlineEditorContent[tab];
+                    // console.log("spInlineEditorContent:", value);
+                    spInlineEditorEditor.innerHTML = value;
+                    spInlineEditorEditor.style.display = 'block'; 
+                        
+                });
+            }
+
+                tabsContainer.appendChild(button);
+
+            });
+
+
+            
+            function updateTabStyles() {
+                Array.from(tabsContainer.children).forEach((button, index) => {
+                    button.style.backgroundColor = tabs[index] === activeTab ? '#007BFF' : '#ddd';
+                    button.style.color = tabs[index] === activeTab ? 'white' : 'black';
+                });
+            }      
+
+            const spInlineEditorToolbar = document.createElement('div');
+            spInlineEditorToolbar.id = 'spInlineEditorToolbar';
+            spInlineEditorToolbar.style.display = "flex";
+            spInlineEditorToolbar.style.flexWrap = "wrap";
+            spInlineEditorContainer.appendChild(spInlineEditorToolbar);
+
+            function createButton(iconHTML, command) {
+                const toolbarButton = document.createElement('button');
+                toolbarButton.id = "toolbarButton"
+                toolbarButton.innerHTML = iconHTML;
+                toolbarButton.onclick = () => formatText(command);
+                toolbarButton.style.background = "none";
+                toolbarButton.style.border = "none";
+                toolbarButton.style.cursor = "pointer";
+                toolbarButton.style.fontSize = "18px";
+                toolbarButton.style.margin = "5px";
+                toolbarButton.style.padding = "10px";
+                toolbarButton.style.touchAction = "manipulation";
+                toolbarButton.onmouseover = () => button.style.color = "#0073aa";
+                toolbarButton.onmouseout = () => button.style.color = "black";
+                spInlineEditorToolbar.appendChild(toolbarButton);
+            }
+
+
+            createButton('B', 'bold'); // Bold
+            createButton('<i>I</i>', 'italic'); // Italic
+            createButton('<u>U</u>', 'underline'); // Underline
+            createButton('&#35;', 'insertOrderedList'); // Ordered List
+            createButton('&#8226;', 'insertUnorderedList'); // Unordered List
+            createButton('&#128279;', 'createLink'); // Link
+            createButton('&#10060;', 'removeFormat');
+                
+            spInlineEditorContainer.appendChild(spInlineEditorEditor);
+
+            const saveButton = document.createElement('button');
+            saveButton.id = 'saveButton';
+            saveButton.textContent = `Save`;
+            saveButton.onclick = saveContent;
+            saveButton.style.marginTop = "10px";
+            saveButton.style.padding = "10px 20px";
+            saveButton.style.fontSize = "16px";
+            saveButton.style.cursor = "pointer";
+            saveButton.style.backgroundColor = "#0073aa";
+            saveButton.style.color = "white";
+            saveButton.style.border = "none";
+            saveButton.style.borderRadius = "4px";
+            saveButton.style.width = "100%";
+            
+            spInlineEditorContainer.appendChild(saveButton);
+
+            // Function to apply formatting
+            function formatText(command, value = null) {
+                if (command === 'createLink') {
+                    value = prompt('Enter the link URL:');
+                }
+                document.execCommand(command, false, value);
+            }
+
+            // console.log("activeTab:", activeTab)
+            let content;
+            function saveContent() {
+
+                if(activeTab === 'JS') {
+
+                    content = spInlineEditorEditor.innerText.replace(/\n/g, '');
+                    // console.log("content:", content)
+
+                    inlineStoredSettings[activeTab] = content;
+
+                    localStorage.setItem('spInlineEditorContent', JSON.stringify(inlineStoredSettings));
+                    spInlineEditorEditor.style.display = 'none'; ;
+
+                } else {
+
+                    content = spInlineEditorEditor.innerHTML;
+     
+                    inlineStoredSettings[activeTab] = content;
+
+                    localStorage.setItem('spInlineEditorContent', JSON.stringify(inlineStoredSettings));
+                    spInlineEditorEditor.style.display = 'none';
+
+                }
+            }
+
+            spInlineEditorContainer.appendChild(tabsContainer);
+            spInlineEditorContainer.appendChild(spInlineEditorEditor);
+            spInlineEditorContainer.appendChild(saveButton);
+            return spMainContainer.appendChild(spInlineEditorContainer);
+        }
+
+
+        // SpahApp inline editor code ends here-------------------------------------------------
+
+
+        // SpahApp home JS code starts here ----------------------------------------------
+
+        let scriptElement;
+        let _scriptContent;
+        function spAppHomeJSEmbededScript() {
+
+            function isStringEmpty(str) {
+                return typeof str === 'string' && str.trim() === '';
+            }
+
+            if (!isStringEmpty(storedSettings.JS)) {
+
+                _scriptContent = storedSettings.JS
+                // console.log("_scriptContent:", _scriptContent)
+
+                scriptContent = _scriptContent;
+            
+                scriptElement = document.createElement('script');
+                scriptElement.id = 'homeScript';
+                scriptElement.innerHTML = scriptContent;
+                document.body.appendChild(scriptElement);
+
+            } 
+            // else {
+
+            //     spMainContainer.innerHTML = "Upload JS content!";
+            //     // console.log("_scriptContent is empty:", decodedHTML)
+
+            // }
+        }
+
+        // SpahApp home code ends here ----------------------------------------------
+
+
+
+        // Function to show the corresponding section in the main content area
+        function showSection(section) {
+            switch(section) {
+                case 'spApp':
+                    
+                    location.reload()
+                    spRightNav.style.display = 'none';
+
+                    break;
+                case 'spReadme':
+                    spMainContainer.innerHTML = spReadmeContent;
+                    spRightNav.style.display = 'none';
+                    break;
+
+                case 'spDownloadApp':
+                    spDownloadApp()
+                    spRightNav.style.display = 'none';
+                    break;
+
+                case 'spDownloadAppData':
+                    spDownloadAppData()
+                    spRightNav.style.display = 'none';
+                    break;
+
+                case 'spHelp':
+                    spMainContainer.innerHTML = '<h2>SP Help</h2><p>How can we assist you?</p>';
+                    spRightNav.style.display = 'none';
+                    break;
+                    
+                case 'sp-loginForm':
+                    spMainContainer.innerHTML = `
+                        <h2>Login</h2>
+                        <form id="loginForm">
+                            <label for="password">Password</label><br>
+                            <input type="password" id="password" name="password"><br><br>
+                            <input type="submit" value="Login">
+                        </form>
+                    `;
+                    spMainContainer.style.padding = '20px';
+                    const loginForm = document.getElementById('loginForm');
+                    loginForm.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        const storedPassword = storedSettings.password || DEFAULT_PASSWORD; 
+                        const enteredPassword = document.getElementById('password').value;
+                        if (enteredPassword === storedPassword) {
+                            // alert('Welcome!');
+                            spRightNav.style.display = 'flex';
+                            
+                            // Start spInlineEditor code here ------------------------
+
+                            spMainContainer.innerHTML = '';
+                            spInlineEditor()
+
+                        } else {
+                            alert('Incorrect password.');
+                        }
+                    });
+                    break;
+
+            }
+        }
+
+        function spHomeContainerNavSection(section) {
+            switch(section) {
+                case 'appHome':
+                    // console.log("Loading appHome content ...")
+                    // console.log("storedSettings.HTML_CSS:", storedSettings.HTML_CSS)
+
+
+                    if (storedSettings.HTML_CSS || storedSettings != '') {
+
+                        location.reload()
+                        spRightNav.style.display = 'none';
+
+                    } else {
+
+                        // console.log('Please save HTML content');
+                        spMainContainer.innerHTML = 'Go to Settings and upload code!'
+
+                    }
+
+                    spRightNav.style.display = 'none';
+                    break;
+
+                case 'appAbout':
+                    // console.log("Loading appAbout content ...")
+                    
+                    spMainContainer.innerHTML = storedSettings.About
+                    spRightNav.style.display = 'none';
+                    
+                    break;
+                case 'appContact':
+                    // console.log("Loading appContact content ...")
+                    
+                    spMainContainer.innerHTML = storedSettings.Contact
+                    spRightNav.style.display = 'none';
+            }
+        }
+
+
+
+        // Function to show content in the right section spGridContainer
+        function showRightSection(section) {
+            switch(section) {
+                case 'appTitle':
+                    spMainContainer.innerHTML = `
+                        <h2>Change App Title</h2>
+                        <div id="spChangeAppTitle">
+                            <label for="newTitleInput">New App Title</label><br>
+                            <input type="text" id="newTitleInput"><br><br>
+                            <button onclick="spChangeAppTitle()">Save Title</button>
+                        </div>`;
+
+                    break;
+
+                case 'appPassword':
+                    spMainContainer.innerHTML = `
+                    <div id="spAppPassword">
+                        <h2>App Password</h2>
+                        <div>
+                            <label for="currentPasswordInput">Current Password:</label><br>
+                            <input type="password" id="currentPasswordInput"><br><br>
+                        </div>
+                        <div>
+                            <label for="newPasswordInput">New Password:</label><br>
+                            <input type="password" id="newPasswordInput">
+                        </div>
+                        <div>
+                            <label for="confirmPasswordInput">Confirm New Password:</label><br>
+                            <input type="password" id="confirmPasswordInput"><br><br>
+                        </div>
+                        <button id="saveAppPassword" onclick="spChangeAppPassword()">Save Password</button>
+                    </div>`;
+                    break;
+
+                case 'appHTML':
+
+                    spInlineEditor()
+
+
+            }
+        }
+
+        function spChangeAppTitle() {
+
+            let newTitle = document.getElementById('newTitleInput').value;
+            storedSettings.title = newTitle;
+            localStorage.setItem('sp-settings', JSON.stringify(storedSettings));
+            spTitle.textContent = newTitle;
+            document.getElementById('spChangeAppTitle').style.display = 'none';
+            spMainContainer.innerHTML = 'Title changed successfully!'
+
+        }
+
+        function spChangeAppPassword() {
+
+            const currentPassword = document.getElementById('currentPasswordInput').value;
+            // console.log(currentPassword)
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+            // Check if the current password is correct
+            // const storedSettings = JSON.parse(localStorage.getItem('sp-settings')) || {};
+            let storedPassword = storedSettings.password || DEFAULT_PASSWORD;
+
+            if (currentPassword === storedPassword) {
+
+                if (newPassword && newPassword === confirmPassword) {
+
+                    storedSettings.password = newPassword;
+                    localStorage.setItem('spInlineEditorContent', JSON.stringify(storedSettings));
+                    // alert('Password updated successfully.');
+
+                    document.getElementById('spAppPassword').style.display = 'none';
+                    spMainContainer.innerHTML = 'Password changed successfully!'
+
+                } else if (newPassword || confirmPassword) {
+                    alert('New passwords do not match.');
+                }
+
+            } else {
+                alert('Current password is incorrect.');
+            }
+
+            }
+
+        function spDownloadApp() {
+            const applicationName = document.title;
+            // console.log(applicationName)
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${applicationName}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function spDownloadAppData() {
+            const appData = JSON.parse(localStorage.getItem('appData')) || [];
+            // console.log(appData)
+            const csvContent = convertArrayToCSV(appData);
+            const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `app-data.csv`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function convertArrayToCSV(arr) {
+            const isObject = arr.length > 0 && typeof arr[0] === 'object';
+            let csvRows = [];
+
+            if (isObject) {
+                const headers = Object.keys(arr[0]);
+                csvRows.push(headers.join(','));
+
+                csvRows = csvRows.concat(arr.map(obj => {
+            return headers.map(header => `"${String(obj[header]).replace(/"/g, '""')}"`).join(',');
+                }));
+            } else {
+                csvRows = arr.map(word => `"${String(word).replace(/"/g, '""')}"`);
+            }
+
+            return csvRows.join("\n");
+        }
+
+
+        function startApp() {
+
+
+            const encodedDiv = document.createElement('div');
+            encodedDiv.innerHTML = storedSettings.HTML_CSS || 'Go to Settings and upload code!';
+
+            // Get the decoded HTML
+            const decodedHTML = encodedDiv.textContent 
+            // console.log("decodedHTML:", decodedHTML);
+
+            // const decodedHTML = encodedDiv.innerText;
+            // console.log("decodedHTML:", decodedHTML);
+            
+            spMainContainer.innerHTML = decodedHTML || 'Go to Settings and upload code!';
+            spAppHomeJSEmbededScript()
+
+            spHomeContainerNav.style.display = 'flex';
+
+        }
+
+        function spJSScript() {
+
+            const spLocalStorageScript = storedSettings.JS || '';
+            const dynamicFunction = new Function(spLocalStorageScript);
+
+            // console.log(dynamicFunction());
+            // return "Script executed successfully!";
+
+        }
+
+        startApp()
+
+    </script>
+
+</body>
+</html>
